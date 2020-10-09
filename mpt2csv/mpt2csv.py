@@ -78,8 +78,8 @@ class mpt2csv:
         return self.d_output
 
     def save(self, path_diroutput, saveas = 'mpt'):
-        def my_write(path, saveas):
-            path_output = os.path.join(path_diroutput, k + str(i) + '.' + saveas)
+        def my_write(filename):
+            path_output = os.path.join(path_diroutput, filename + '.' + saveas)
             if saveas == 'mpt':
                 with open(path_output, mode = 'w') as f:
                     f.write(self.info)
@@ -91,7 +91,8 @@ class mpt2csv:
             else:
                 raise ValueError('saveas is not correct.')
 
-
+        # 何個の測定データが入ってるかをカウント (namesリストが指定された場合その数と一致しているかを確認する．)
+        self.filenames = []
         for k, v in self.d_output.items():
             for i, df in enumerate(v):
                 for col in df.columns:
@@ -103,7 +104,12 @@ class mpt2csv:
 
                 df.loc[:, col_name] = df.loc[:, col_name].map(lambda x:float(x)*-1)
                 df = df.rename(columns = {col_name : new_col_name})
-                my_write(path_diroutput, saveas = saveas)
+                
+                filename = k + '_' + str(i)
+                # ファイルの書き出し                
+                my_write(filename = filename)
+
+                self.filenames.append(filename)
 
 
     def _chomp_split(self, str_):

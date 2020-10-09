@@ -19,7 +19,7 @@ cand = ['mpt', 'csv', 'txt']
 Text_size = (20, 1)
 InputBrowse_size = (20, 1)
 
-layout = [
+layout_main = [
     [sg.Text('convert mpt files.', size = Text_size)],
     [sg.Text('input mpt files : ', size = Text_size), sg.Input(key = '-INPUT-', size = InputBrowse_size), sg.FilesBrowse(file_types = (("mpt files", "*.mpt"),))],
     [sg.Text('output folder : ', size = Text_size), sg.Input(key = '-OUTPUT-', size = InputBrowse_size), sg.FolderBrowse()],
@@ -27,25 +27,47 @@ layout = [
     [sg.Submit('Run'), sg.Cancel()],
 ]
 
-window = sg.Window('mpt2csv', layout, **window_options)
+window_main = sg.Window('mpt2csv', layout_main, **window_options)
 
 while True:
-    event, values = window.read()
+    event, values = window_main.read()
     path_inputs = values['-INPUT-'].split(';')
     path_diroutput = values['-OUTPUT-']
+    saveas = values['saveas']
 
     if event in (None, 'Cancel'):
         break
     elif event == 'Run':
         if len(path_inputs) != 0 and len(path_diroutput) != 0:
-            # try:
-            #     mpt2csv(path_inputs).save(path_diroutput, saveas = values['saveas'])
-            # except:
-            #     sg.popup_error('There is something wrong when converting.', **window_options)
-            # else:
-            #     sg.popup_ok('Finish!', **window_options)
-            mpt2csv(path_inputs).save(path_diroutput, saveas = values['saveas'])
-            sg.popup_ok('Finish!', **window_options)
+            m2c = mpt2csv(path_inputs)
+            m2c.save(path_diroutput, saveas = saveas)
+
+            layout_rename = [
+                [sg.Text('Please rename files if you want. (A number of files is {}.)'.format(len(m2c.filenames)))],
+                [sg.Multiline(default_text = '\n'.join(m2c.filenames), size = (100, None), key = '-FILENAMES-')],
+                [sg.OK(), sg.Cancel()]
+            ]
+            window_rename = sg.Window('mpt2csv', layout_rename, **window_options)
+
+            while True:
+                event_rename, values_rename = window_rename.read()
+                if event_rename in (None, 'Cancel'):
+                    sg.popup_timed('Finished!', **window_options)
+                    break
+                elif event_rename == 'OK':
+                    filenames = values_rename['-FILENAMES-']
+                    r = sg.popup_ok_cancel('May I change filenames?', **window_options)
+                    if r == 'OK':
+                        if m2c.filenames != filenames.split('\n'):
+                            for old_filename, new_filename in zip(m2c.filenames, filenames.replace('\r', '').split('\n')):
+                                if old_filename != new_filename:
+                                    os.rename(os.path.join(path_diroutput, old_filename + '.' + saveas), os.path.join(path_diroutput, new_filename + '.' + saveas))
+                        sg.popup_timed('Finished!')
+                        break
+                    else:
+                        continue
+            window_rename.close()
         else:
-            sg.Popup('You have to fill all boxes.', **window_options)
+            sg.popup_error('You have to fill all boxes.', **window_options)
+window_main.close()
             
