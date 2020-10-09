@@ -6,7 +6,7 @@ import os
 import re
 
 
-class mpt2multi:
+class mpt2csv:
     def __init__(self, path_inputs):
         self.key_start = '(Nb header lines\s?:\s?)(\d+)'
         self.key_loops = '(Number of loops\s?:\s?)(\d+)'
@@ -17,30 +17,55 @@ class mpt2multi:
         self.d_output = {}
         for file in self.path_inputs:
             # mptファイルを読む
-            with open(file) as f:
+            with open(file, encoding = 'shift_jis') as f:
                 raw = f.read()
 
-            # 導電率に関する情報が書かれ始める行番号を取得
+            # 導電率に関する情報が書かれ始める行番号を取得 (headerの一行下)
             num_start = int(re.search(self.key_start, raw).groups()[1])
 
-            # いくつの測定データが入ってるかについて何行目 (self.num_line_loops) に書いてあるか，またそのデータの数 (num_loops) はいくつか．
+            # いくつの測定データが入ってるかにloopsついて何文字目に書いてあるか，またそのデータの数 (num_loops) はいくつか．
             m = re.search(self.key_loops, raw)
-            num_loops = int(m.groups()[1])
-            self.info = raw[:m.start()]
-            self.num_line_loops = self.info.count('\n') + 1
+
+            # 使いやすく改行ごとにリスト化
+            lines = raw.split('\n')
             
-            self.info = re.sub(self.key_start, re.search(self.key_start, self.info).groups()[0] + str(self.num_line_loops), self.info)
-            # print(self.info)
+            if m is None:   # loopに関してそもそも書かれていないとき
+                # loop回数
+                num_loops = 1
 
-            lines = raw.split('\n') # 使いやすく改行ごとにリスト化
+                # 装置の情報や測定条件についての部分
+                self.info = '\n'.join(lines[:num_start-1]) # headerは，pd.DataFrameのほうから追加するため．また，self.infoは文字列
+
+                # 複数のインピーダンスデータが存在する場合の分割する行数
+                range_ = [[0, len(lines)-num_start]]
+
+                # infoが終わる行 (infoの次が始まる行数)
+                self.num_line_end_info = num_start
+            else:
+                # loop回数
+                num_loops = int(m.groups()[1])
+
+                # 装置の情報や測定条件についての部分
+                self.info = raw[:m.start()]
+                num_line_loops = self.info.count('\n') + 1
+                
+                # 複数のインピーダンスデータが存在する場合の分割する行数
+                i = 0
+                range_ = []
+                while i < num_loops:
+                    s = re.search(self.key_range, lines[num_line_loops+i])
+                    range_.append(list(map(int, s.groups())))
+                    i += 1
+
+                # infoが終わる行 (infoの次が始まる行数)
+                self.num_line_end_info = num_line_loops
+            
+            # 読み取り開始行数の部分を書き換え
+            self.info = re.sub(self.key_start, re.search(self.key_start, self.info).groups()[0] + str(self.num_line_end_info), self.info)
+
+            # 扱いやすいように測定データの部分はpd.DataFrameとして読み取り．
             df = pd.DataFrame(map(self._chomp_split, lines[num_start:]), columns = self._chomp_split(lines[num_start-1]))
-
-            i = 0
-            range_ = []
-            while i < num_loops:
-                s = re.search(self.key_range, lines[self.num_line_loops+i])
-                range_.append(list(map(int, s.groups())))
-                i += 1
+                
             
             dfs = []
             for l, r in range_:
