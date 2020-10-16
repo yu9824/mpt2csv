@@ -30,14 +30,15 @@ layout_main = [
 window_main = sg.Window('mpt2csv', layout_main, **window_options)
 
 while True:
+    print(os.environ['PWD'], os.environ['OLDPWD'])
     event, values = window_main.read()
-    path_inputs = values['-INPUT-'].split(';')
-    path_diroutput = values['-OUTPUT-']
-    saveas = values['saveas']
 
-    if event in (None, 'Cancel'):
+    if event is None or event == 'Cancel':
         break
     elif event == 'Run':
+        path_inputs = values['-INPUT-'].split(';')
+        path_diroutput = values['-OUTPUT-']
+        saveas = values['saveas']
         if len(path_inputs) != 0 and len(path_diroutput) != 0:
             m2c = mpt2csv(path_inputs)
             m2c.save(path_diroutput, saveas = saveas)
@@ -62,7 +63,7 @@ while True:
                             for old_filename, new_filename in zip(m2c.filenames, filenames.replace('\r', '').split('\n')):
                                 if old_filename != new_filename:
                                     os.rename(os.path.join(path_diroutput, old_filename + '.' + saveas), os.path.join(path_diroutput, new_filename + '.' + saveas))
-                        sg.popup_timed('Finished!')
+                        sg.popup_timed('Finished!', **window_options)
                         break
                     else:
                         continue
