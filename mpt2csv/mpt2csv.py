@@ -83,7 +83,7 @@ class mpt2csv:
             if saveas == 'mpt':
                 with open(path_output, mode = 'w') as f:
                     f.write(self.info)
-                df.to_csv(path_output, encoding = 'utf_8_sig', index = False, sep = ' ', mode = 'a')
+                df.to_csv(path_output, encoding = 'utf_8_sig', index = False, sep = '\t', mode = 'a')
             elif saveas == 'csv':
                 df.to_csv(path_output, encoding = 'utf_8_sig', index = False)
             elif saveas == 'txt':
@@ -93,17 +93,20 @@ class mpt2csv:
 
         # 何個の測定データが入ってるかをカウント (namesリストが指定された場合その数と一致しているかを確認する．)
         self.filenames = []
+        cn = 'cycle number'
         for k, v in self.d_output.items():
             for i, df in enumerate(v):
-                for col in df.columns:
-                    m = re.match('-(.*Z.*)', col)
-                    if m is not None:
-                        break
-                col_name = m.group()
-                new_col_name = m.groups()[0]
+                if cn in df.columns:
+                    df.loc[:, cn] = 1
+                # for col in df.columns:
+                #     m = re.match('-(.*Z.*)', col)
+                #     if m is not None:
+                #         break
+                # col_name = m.group()
+                # new_col_name = m.groups()[0]
 
-                df.loc[:, col_name] = df.loc[:, col_name].map(lambda x:float(x)*-1)
-                df = df.rename(columns = {col_name : new_col_name})
+                # df.loc[:, col_name] = df.loc[:, col_name].map(lambda x:float(x)*-1)
+                # df = df.rename(columns = {col_name : new_col_name})
                 
                 filename = k + '_' + str(i)
                 # ファイルの書き出し                

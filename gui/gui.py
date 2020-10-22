@@ -30,7 +30,6 @@ layout_main = [
 window_main = sg.Window('mpt2csv', layout_main, **window_options)
 
 while True:
-    print(os.environ['PWD'], os.environ['OLDPWD'])
     event, values = window_main.read()
 
     if event is None or event == 'Cancel':

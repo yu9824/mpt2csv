@@ -60,10 +60,8 @@ if sys.argv[1] == 'py2app':
         setup_requires=['py2app'],
     )
 
-    {copyfile(f, os.path.join(frameworks_path, os.path.basename(f))) for f in dylib_files}
-
-if sys.argv[1] == 'py2exe':
-    from distutils.core import setup
-    import py2exe   # pip install py2exe
-    setup(console=['gui/gui.py'])
+    if len(sys.argv) >= 3 and '-A' in sys.argv:
+        pass
+    else:
+        {copyfile(f, os.path.join(frameworks_path, os.path.basename(f))) for f in dylib_files}
 
