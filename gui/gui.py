@@ -52,7 +52,6 @@ while True:
             while True:
                 event_rename, values_rename = window_rename.read()
                 if event_rename in (None, 'Cancel'):
-                    sg.popup_timed('Finished!', **window_options)
                     break
                 elif event_rename == 'OK':
                     filenames = values_rename['-FILENAMES-']

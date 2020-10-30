@@ -12,7 +12,7 @@ import os
 
 from shutil import copyfile
 
-VERSION = '0.0.2'
+VERSION = '0.0.3'
 
 sys.setrecursionlimit(10 ** 9)
 
