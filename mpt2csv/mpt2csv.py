@@ -81,7 +81,7 @@ class mpt2csv:
         def my_write(filename):
             path_output = os.path.join(path_diroutput, filename + '.' + saveas)
             if saveas == 'mpt':
-                with open(path_output, mode = 'w') as f:
+                with open(path_output, mode = 'w', encoding = 'utf_8_sig') as f:
                     f.write(self.info)
                 df.to_csv(path_output, encoding = 'utf_8_sig', index = False, sep = '\t', mode = 'a')
             elif saveas == 'csv':
