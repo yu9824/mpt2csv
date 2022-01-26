@@ -57,13 +57,15 @@ class Mpt2Csv:
             raise NotImplementedError('extension is not supported: {}.'.format(ext))
 
 def main():
+    font_option = 'Helvetica 18'
+    # window options
     window_options = {}
-    window_options['font'] = 'Helvetica 18'
+    window_options['font'] = font_option
     window_options['resizable'] = True
 
-    # for overwrite
-    yes_to_all = False
-    quit_now = False
+    # popup options
+    popup_options = {}
+    popup_options['font'] = font_option
 
     sg.theme('Dark Blue')
 
@@ -72,7 +74,7 @@ def main():
     InputBrowse_size = (20, 1)
 
     layout_main = [
-        [sg.Text('convert mpt files.', size = Text_size)],
+        [sg.Text('Convert mpt files.', size = Text_size)],
         [sg.Text('input mpt files : ', size = Text_size), sg.Input(key = '-INPUT-', size = InputBrowse_size, expand_x = True), sg.FilesBrowse(file_types = (("mpt files", "*.mpt"),))],
         [sg.Text('output folder : ', size = Text_size), sg.Input(key = '-OUTPUT-', size = InputBrowse_size, expand_x = True), sg.FolderBrowse()],
         [sg.Text("output files' extension", size = Text_size), sg.Combo(cand, size = (10, 1), key = 'ext', default_value = cand[0])],
@@ -84,6 +86,11 @@ def main():
     while True:
         event, values = window_main.read()
 
+        # for overwrite
+        yes_to_all = False
+        quit_now = False
+        cnt = 0
+
         if event is None or event == 'Cancel':
             break
         elif event == 'Run':
@@ -91,10 +98,12 @@ def main():
             if fpaths_input:
                 fpaths_input = fpaths_input.split(';')
             else:
-                sg.popup_error('input file is empty.')
+                sg.popup_error('Input files are not selected.', **popup_options)
+                continue
             dirpath_output = values['-OUTPUT-']
             if not dirpath_output:
-                sg.popup_error('output folder is empty.')
+                sg.popup_error('Output folder is not selected.', **popup_options)
+                continue
             ext = values['ext']
 
         
@@ -104,17 +113,20 @@ def main():
 
                 for n_cycle_, df_ in enumerate(mpt2csv.split(df=df_input_)):
                     df_.dropna(axis=1, how='all', inplace=True)
-                    fname_base_output_ = f'{os.path.splitext(os.path.basename(fpath_input))[0]}_{n_cycle_}'
+                    fname_base_output_ = f'{os.path.splitext(os.path.basename(fpath_input))[0]}_{n_cycle_+1}'
                     if os.path.isfile(os.path.join(dirpath_output, f'{fname_base_output_}.{ext}')):
+                        cnt += 1
                         while not yes_to_all:
                             window_overwrite = sg.Window('Can I overwrite?', layout=[
-                                [sg.Text('{} already exists.'.format(fname_base_output_))],
+                                [sg.Text(f'"{fname_base_output_}.{ext}" already exists.')],
+                                [sg.Text('Can I overwrite?')],
                                 [sg.Button('Yes'), sg.Button('Yes to All'), sg.Button('No')],
                             ], **window_options)
                             event_overwrite, values_overwrite = window_overwrite.read()
                             if event_overwrite == 'Yes':
                                 yes_to_all = False
                                 quit_now = False
+                                cnt = 0
                                 break
                             elif event_overwrite == 'Yes to All':
                                 yes_to_all = True
@@ -123,11 +135,12 @@ def main():
                             elif event_overwrite in ('No', None):
                                 yes_to_all = False
                                 quit_now = True
+                                sg.popup_ok('Aborted.', **popup_options)
                                 break
                             else:
-                                sg.popup_error('unknown event{}.'.format(event_overwrite))
                                 yes_to_all = False
                                 quit_now = True
+                                sg.popup_error('Unknown event{}.'.format(event_overwrite), **popup_options)
                                 break
                         window_overwrite.close()
                         
@@ -138,13 +151,16 @@ def main():
                     elif info_ is None or type(info_) == str:
                         pass
                     else:
-                        sg.popup_error('unknown info type {}.'.format(type(info_)))
+                        sg.popup_error('unknown info type {}.'.format(type(info_)), **popup_options)
                         break
                     mpt2csv.my_save(df=df_, fname_base_output=fname_base_output_, dirpath_output=dirpath_output, info=info_, ext=ext)
                 if quit_now:
                     break
             else:
-                sg.popup_ok('Done.', font = window_options['font'])
+                if yes_to_all:
+                    sg.popup_ok(f'The {cnt} files are overwritten.', **popup_options)
+                else:
+                    sg.popup_ok('Done.', **popup_options)
 
     window_main.close()
 
