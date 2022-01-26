@@ -1,3 +1,7 @@
+'''
+Copyright (c) 2022 yu9824  
+'''
+
 import PySimpleGUI as sg
 import os
 import sys
