@@ -1,6 +1,9 @@
 # mpt2csv
+This is only for **Mac OSX**.
+## For user
+You can download the latest version of this app from the [release](https://github.com/yu9824/mpt2csv/releases) page.
 
-## Installation
+## For developer
 ### Create a new virtual conda environment
 ```bash
 conda create -yn mpt2csv python==3.9.6 --file requirements-conda.txt
@@ -11,7 +14,7 @@ conda create -yn mpt2csv python==3.9.6 --file requirements-conda.txt
 conda activate mpt2csv
 ```
 
-### Install by using pypi
+### Install pypi package
 ```
 pip install -r requirements-pip.txt
 ```
