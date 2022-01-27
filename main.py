@@ -71,6 +71,10 @@ def main():
     popup_options = {}
     popup_options['font'] = font_option
 
+    menu = sg.Menu([
+        ['About', ['OpenSource Software License']],
+    ], font=font_option, key='_menu_')
+
     sg.theme('Dark Blue')
 
     cand = ['mpt', 'csv', 'txt']
@@ -78,6 +82,7 @@ def main():
     InputBrowse_size = (20, 1)
 
     layout_main = [
+        [menu],
         [sg.Text('Convert mpt files.', size = Text_size)],
         [sg.Text('input mpt files : ', size = Text_size), sg.Input(key = '-INPUT-', size = InputBrowse_size, expand_x = True), sg.FilesBrowse(file_types = (("mpt files", "*.mpt"),))],
         [sg.Text('output folder : ', size = Text_size), sg.Input(key = '-OUTPUT-', size = InputBrowse_size, expand_x = True), sg.FolderBrowse()],
@@ -165,6 +170,12 @@ def main():
                     sg.popup_ok(f'The {cnt} files are overwritten.', **popup_options)
                 else:
                     sg.popup_ok('Done.', **popup_options)
+        elif event == 'OpenSource Software License':
+            with open('opensource_software.txt', 'r') as f:
+                sg.popup_ok(f.read(), **popup_options)
+                # sg.popup_scrolled(f.read(), **popup_options, )
+        else:
+            sg.popup_error('Unknown event{}.'.format(event), **popup_options)
 
     window_main.close()
 

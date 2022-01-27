@@ -27,7 +27,7 @@ EMAIL = '{0}@{1}'.format('yu.9824.job', 'gmail.com')
 
 # py2app用の変数
 SRC = ['main.py']
-DATA_FILES = ['LICENSE', 'README.md']
+DATA_FILES = ['LICENSE', 'README.md', 'opensource_software.txt']
 PKGS = ['pandas', 'numpy', 'PySimpleGUI']
 ICON = os.path.join('icon', '{}.icns'.format(APP_NAME))
 # --------------------------------------------------------------------
