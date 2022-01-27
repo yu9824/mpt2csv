@@ -17,7 +17,7 @@ sys.setrecursionlimit(10 ** 9)
 
 
 # ------------------------ ここを変更 --------------------------------
-VERSION = '0.1.1'
+VERSION = '0.1.2'
 VERSION_PYTHON = '{0}.{1}'.format(sys.version_info.major, sys.version_info.minor)
 APP_NAME = 'mpt2csv'
 DESCRIPTION = 'convert mpt file to another format'
